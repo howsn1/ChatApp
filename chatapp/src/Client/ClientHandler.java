@@ -3,12 +3,14 @@
 /******************************************************* *********************************************/
 /* THE CLIENTHANDLER class allows us to handle each client separately, in terms of the thread he ll be using */
 /******************************************************************************************************* */
-package src;
+package src.Client;
 
  
-import java.io.*;
+import  java.io.*;
 import  java.net.*;
-import  java.util.*;
+import java.util.*;
+
+import src.db.Authenticate;
 
 
 public class ClientHandler implements Runnable{
@@ -45,17 +47,23 @@ public  void run(){
  String messageFromClient;
     //while(!clientSocket.isClosed()){
     while(clientSocket.isConnected()){
-        try {
-            messageFromClient=bufferedReader.readLine();
-            broadCastMessage(messageFromClient);
-        } catch (IOException e) {
-            closeEverything(clientSocket,bufferedReader,bufferedWriter);
-                        break;
-          }                 
-                 }
+               try {
+                 messageFromClient=bufferedReader.readLine();
+               if (Authenticate.authenticateUser(clientUsername, "testPass")) { // Placeholder password check
+                    broadCastMessage(messageFromClient);
+                } else {
+                    System.out.println( clientUsername + " is not authenticated to send messages.");
+                    break;
+                }
+
+             }catch(IOException e ){
+                      closeEverything(clientSocket, bufferedReader, bufferedWriter);
+                      break;
  }
+}
+}
          
-            private void broadCastMessage(String messageToSend) {
+   private void broadCastMessage(String messageToSend) {
                 try{
                 for (ClientHandler clientHandler:clients){
                     if(!clientHandler.clientUsername.equals(clientUsername)){
@@ -69,6 +77,9 @@ public  void run(){
             }} catch(IOException e ){
                 closeEverything(clientSocket, bufferedReader, bufferedWriter);
             }
+
+            
+
 
 }
 
