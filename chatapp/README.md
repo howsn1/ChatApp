@@ -3,8 +3,12 @@ My contribution to this project is to maintain a communication  between multiple
 
 # How to use 
 -> First run the server ( it will run on the port 1234 ! ) 
--> Run  Client.java
--> once You register , the ogin will pop up 
+-> Run  Client.java 
+
+
+-> once You register , the Login will pop up 
+
+
 -> the chatApp interface will pop up finally and you can now send the messages .
 
 Notes:
