@@ -2,12 +2,13 @@ package src.gui;
 
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.*;
-import java.net.Socket;
 import java.io.IOException;
-
-import src.Client.Client;
+import java.net.Socket;
+import javax.swing.*;
+import src.client.Client;
 import src.db.Authenticate;
+import src.gui.chatInterface;
+
 
 public class LoginForm extends JFrame {
     
@@ -66,7 +67,7 @@ public class LoginForm extends JFrame {
         
         add(panel);
         
-        // Add action listeners
+
         loginButton.addActionListener(e -> attemptLogin());
         registerButton.addActionListener(e -> openRegisterForm());
         
@@ -113,6 +114,7 @@ public class LoginForm extends JFrame {
         }
     }
     
+    
     private void connectToServer(String username, String password) {
         try {
             Socket socket = new Socket("localhost", 1234);
@@ -142,7 +144,10 @@ public class LoginForm extends JFrame {
     private void openChatInterface(Client client, String username) {
         // Close the login form
         this.dispose();
-        
+        client.listenForMessages(message -> {
+            System.out.println("📨 " + message); // DEBUG: print received message
+        });
+
         // Create and show the chat interface
         EventQueue.invokeLater(() -> {
             try {
@@ -166,4 +171,5 @@ public class LoginForm extends JFrame {
             }
         });
     }
+    
 }

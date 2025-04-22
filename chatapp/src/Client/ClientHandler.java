@@ -3,7 +3,7 @@
 /******************************************************* *********************************************/
 /* THE CLIENTHANDLER class allows us to handle each client separately, in terms of the thread he ll be using */
 /******************************************************************************************************* */
-package src.Client;
+package src.client;
 
  
 import  java.io.*;

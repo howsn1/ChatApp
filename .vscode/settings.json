@@ -8,5 +8,6 @@
         "Chat-Application/Server/src/server",
         ".vscode",
         "Chat-Application/Client/src/client"
-    ]
+    ],
+    "java.debug.settings.onBuildFailureProceed": true
 }

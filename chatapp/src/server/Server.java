@@ -1,81 +1,15 @@
 
 
-/* 
- public class  Server{
-  private ServerSocket ss ; 
-  public Server(ServerSocket ss){
-    this.ss=ss;
-    System.out.println("[Server] IS ON");
-  }
-
- /*  public void startServer(){
-    
-    try{
-    Socket clientSocket = new Socket() ;
-
-    while(clientSocket.isConnected()){
-      clientSocket=ss.accept();
-      System.out.println("Welcome to the Chat !");
-      ClientHandler clientHandler = new ClientHandler(clientSocket);
- 
-      
-
-      Thread thread = new Thread(clientHandler);
-      thread.start();
-    }
-  }  catch(IOException e){
-      e.getStackTrace(); }
-   }*/
-
-
-
-   /* 
-   public void startServer() {
-    try {
-      
-        while(!ss.isClosed()) {
-            Socket clientSocket = ss.accept(); // This blocks until a client connects
-            System.out.println("New client connected!");
-            ClientHandler clientHandler = new ClientHandler(clientSocket);
-            
-            Thread thread = new Thread(clientHandler);
-            thread.start();
-        }
-    } catch(IOException e) {
-        e.printStackTrace(); // Use printStackTrace() instead of getStackTrace()
-    }
-}
-
-
- public void closeServerSocket(){
-  try{
-    if(ss!=null){
-      ss.close();
-    }
- }catch(IOException e ){
-     e.printStackTrace();
- }
-}
- public static void main(String[] args) throws Exception {
-  
-
-  ServerSocket ss = new ServerSocket(1234);
-  Server server = new Server(ss);
-  server.startServer();
-  
-  
-}
-  }
-}
-
-*/
 
 
 package src.server;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
@@ -83,8 +17,9 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import src.db.Authenticate;
+import src.media.FileHelper;
+import src.media.FileUtils;
 
 public class Server {
     private final ServerSocket serverSocket;
@@ -98,6 +33,7 @@ public class Server {
     public void startServer() {
         try {
             while (!serverSocket.isClosed()) {
+                
                 Socket socket = serverSocket.accept();
                 System.out.println("A new client has connected!");
                 ClientHandler clientHandler = new ClientHandler(socket, clients);
@@ -122,6 +58,7 @@ public class Server {
     public static void main(String[] args) {
         try {
             ServerSocket serverSocket = new ServerSocket(1234);
+
             Server server = new Server(serverSocket);
             System.out.println("Server started on port 1234");
             server.startServer();
@@ -135,8 +72,8 @@ public class Server {
         private BufferedReader bufferedReader;
         private BufferedWriter bufferedWriter;
         private String clientUsername;
-        private ArrayList<ClientHandler> clients;
-        private boolean isLoggedIn = false;
+        private static ArrayList<ClientHandler> clients;
+        private boolean isLoggedIn = false  ;
 
         public ClientHandler(Socket socket, ArrayList<ClientHandler> clients) {
             try {
@@ -159,17 +96,27 @@ public class Server {
                         handleLogin(messageFromClient);
                     } else if (isLoggedIn) {
                         broadcastMessage(messageFromClient);
-                    } else {
-                        bufferedWriter.write("You must login first!");
-                        bufferedWriter.newLine();
-                        bufferedWriter.flush();
+                    if(messageFromClient.startsWith("FILE|")){
+                        receiveFile(messageFromClient);
                     }
-                }
+                         else {
+                      broadcastMessage(messageFromClient);
+
+                        }
+                     
+                       // bufferedWriter.write("You must login first!");
+                    
+                     }
+                     bufferedWriter.newLine();
+                     bufferedWriter.flush();
+                    }
+                
             } catch (IOException e) {
                 closeEverything();
             }
         }
-
+       
+        
         private void handleLogin(String loginMessage) {
             try {
                 // Format: LOGIN username password
@@ -220,6 +167,59 @@ public class Server {
             }
         }
 
+
+  private void receiveFile(String header) {
+    try {
+        // Parse metadata
+        String[] parts = header.split("\\|");
+        if (parts.length < 3) {
+            bufferedWriter.write("Invalid file format received.");
+            bufferedWriter.newLine();
+            bufferedWriter.flush();
+            return;
+        }
+        
+        String fileName = parts[1];
+        long fileSize = Long.parseLong(parts[2]);
+
+        System.out.println("Receiving file: " + fileName + " (" + fileSize + " bytes)");
+
+        // Create a new file to save
+        File file = new File("received_" + fileName);
+        FileOutputStream fos = new FileOutputStream(file);
+        
+        byte[] buffer = new byte[4096];  // Buffer size for reading file
+        long bytesReadTotal = 0;
+
+        // Use the socket's InputStream (raw bytes)
+        InputStream inputStream = socket.getInputStream();
+
+        // Read file data from input stream and write it to the file output stream
+        while (bytesReadTotal < fileSize) {
+            int bytesToRead = (int) Math.min(buffer.length, fileSize - bytesReadTotal);
+            int bytesRead = inputStream.read(buffer, 0, bytesToRead);
+
+            if (bytesRead == -1) break;  // Break if we reach end of stream unexpectedly
+
+            fos.write(buffer, 0, bytesRead);
+            bytesReadTotal += bytesRead;
+        }
+
+        fos.close();
+        System.out.println("✅ File received: " + fileName);
+
+        // Optionally, broadcast to others that a file was received
+        broadcastMessage("SERVER: " + clientUsername + " sent a file: " + fileName);
+
+    } catch (IOException e) {
+        System.out.println("❌ Failed to receive file.");
+        e.printStackTrace();
+    }
+}
+ 
+
+
+
         public void removeClientHandler() {
             clients.remove(this);
             if (clientUsername != null) {
@@ -243,5 +243,6 @@ public class Server {
                 e.printStackTrace();
             }
         }
+
     }
 }

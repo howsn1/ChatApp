@@ -1,10 +1,7 @@
 package src.gui;
 
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
-import java.io.IOException;
-
 import src.db.Register;
 
 public class RegisterForm extends JFrame {
@@ -110,7 +107,7 @@ public class RegisterForm extends JFrame {
             return;
         }
         
-        if (!password.equals(confirmPassword)) {
+        if (!password.equals(confirmPassword) ) {
             JOptionPane.showMessageDialog(this, 
                 "Passwords do not match", 
                 "Registration Error", 
@@ -118,8 +115,28 @@ public class RegisterForm extends JFrame {
             return;
         }
         
+        if (!password.equals(confirmPassword) ) {
+            JOptionPane.showMessageDialog(this, 
+                "Passwords do not match", 
+                "Registration Error", 
+                JOptionPane.ERROR_MESSAGE);
+
+            return;
+        }
+        
+        if (password.length() < 6) {
+         JOptionPane.showMessageDialog(this, 
+        "Password too short", 
+          "Registration Error", 
+                JOptionPane.ERROR_MESSAGE);
+                return;
+         }
+            
+        
+        
+        
         // Email validation (simple check)
-        if (!email.contains("@") || !email.contains(".")) {
+     if (!email.contains("@") || !email.contains(".")) {
             JOptionPane.showMessageDialog(this, 
                 "Please enter a valid email address", 
                 "Registration Error", 

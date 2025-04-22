@@ -1,22 +1,17 @@
-package src.Client;
+package src.client;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
 import java.awt.EventQueue;
-
-import src.gui.LoginForm;
-import src.gui.chatInterface;
-
+import java.io.*;
+import java.net.Socket;
+import src.gui. LoginForm ;
 public class Client {
+
     
     private Socket clientSocket;
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
     private String username;
+    private OutputStream os;
     
     public Client(Socket clientSocket, String username) {
         try {
@@ -24,6 +19,8 @@ public class Client {
             this.clientSocket = clientSocket;
             this.bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+            this.os=clientSocket.getOutputStream();
+
         } catch (IOException e) {
             closeEverything();
         }
@@ -60,10 +57,12 @@ public class Client {
         }
     }
     
+
+
+
     public void listenForMessages(MessageListener listener) {
-        new Thread(() -> {
-            String messageFromGroupChat;
-            
+         new Thread(() -> {
+           String messageFromGroupChat;   
             try {
                 while ((messageFromGroupChat = bufferedReader.readLine()) != null) {
                     final String finalMessage = messageFromGroupChat;
@@ -74,7 +73,7 @@ public class Client {
             }
         }).start();
     }
-    
+
     public void closeEverything() {
         try {
             if (bufferedReader != null) {
@@ -90,7 +89,47 @@ public class Client {
             e.printStackTrace();
         }
     }
-    
+
+    public void sendFile(File file) {
+        try {
+            if (!file.exists()) {
+                System.out.println("File does not exist.");
+                return;
+            }
+            
+            // Send file header with metadata
+            String header = "FILE|" + file.getName() + "|" + file.length();
+            bufferedWriter.write(header);
+            bufferedWriter.newLine();
+            bufferedWriter.flush();
+            
+            // Small delay to ensure header is processed
+            Thread.sleep(100);
+            
+            // Send the file data
+            FileInputStream fis = new FileInputStream(file);
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            
+            // Get direct access to output stream for binary data
+            OutputStream outputStream = clientSocket.getOutputStream();
+            
+            // Read file and send bytes
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            
+            outputStream.flush();
+            fis.close();
+            
+            System.out.println("File sent: " + file.getName());
+            
+        } catch (IOException | InterruptedException e) {
+            System.out.println("Error sending file: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+  
     // Interface for message callbacks
     public interface MessageListener {
         void onMessageReceived(String message);
@@ -106,4 +145,9 @@ public class Client {
             }
         });
     }
+// Implementation de code de transfert des fichiers 
+
+
+
+
 }
