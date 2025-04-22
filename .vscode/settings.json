@@ -1,0 +1,12 @@
+{
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "d:\\JavaLibraries\\mysql-connector-j-9.2.0\\mysql-connector-j-9.2.0.jar"
+    ],
+    "java.project.sourcePaths": [
+        "chatapp",
+        "Chat-Application/Server/src/server",
+        ".vscode",
+        "Chat-Application/Client/src/client"
+    ]
+}
