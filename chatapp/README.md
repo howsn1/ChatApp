@@ -1,18 +1,15 @@
-## Getting Started
+## HI fellow  humans 
+My contribution to this project is to maintain a communication  between multiple clients and the server using the SOCKET API.
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+# How to use 
+-> First run the server ( it will run on the port 1234 ! ) 
+-> Run  Client.java 
 
-## Folder Structure
 
-The workspace contains two folders by default, where:
+-> once You register , the Login will pop up 
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
+-> the chatApp interface will pop up finally and you can now send the messages .
 
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
-
-## Dependency Management
-
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+Notes:
+-> I am working still on file transfer,emojis, and making the passwords & the emails more credible .
