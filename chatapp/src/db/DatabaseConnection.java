@@ -9,7 +9,7 @@ import java.sql.Statement;
 public class DatabaseConnection {
     private static final String URL = "jdbc:mysql://localhost:3306/chatapp"; 
     private static final String USER = "root"; 
-    private static final String PASSWORD = "MySQL0397*/*"; 
+    private static final String PASSWORD = ""; 
 
     public static Connection getConnection() {
         try {
