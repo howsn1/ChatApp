@@ -1,8 +1,4 @@
-
-
-
-
-package src.server;
+package  src.server;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -18,8 +14,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import src.db.Authenticate;
-import src.media.FileHelper;
-import src.media.FileUtils;
+
 
 public class Server {
     private final ServerSocket serverSocket;
@@ -115,7 +110,59 @@ public class Server {
                 closeEverything();
             }
         }
-       
+     private void broadcastUserList() {
+            try {
+                // Build a list of all usernames
+                StringBuilder userList = new StringBuilder("USERLIST|");
+                boolean first = true;
+                
+                for (ClientHandler client : clients) {
+                    if (client.isLoggedIn && client.clientUsername != null) {
+                        if (!first) {
+                            userList.append(",");
+                        }
+                        userList.append(client.clientUsername);
+                        first = false;
+                    }
+                }
+                
+                // Send the user list to all clients
+                for (ClientHandler client : clients) {
+                    if (client.isLoggedIn) {
+                        client.bufferedWriter.write(userList.toString());
+                        client.bufferedWriter.newLine();
+                        client.bufferedWriter.flush();
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        private void sendUserListToClient(ClientHandler targetClient) {
+            try {
+                // Build a list of all usernames
+                StringBuilder userList = new StringBuilder("USERLIST|");
+                boolean first = true;
+                
+                for (ClientHandler client : clients) {
+                    if (client.isLoggedIn && client.clientUsername != null) {
+                        if (!first) {
+                            userList.append(",");
+                        }
+                        userList.append(client.clientUsername);
+                        first = false;
+                    }
+                }
+                
+                // Send the user list just to this specific client
+                targetClient.bufferedWriter.write(userList.toString());
+                targetClient.bufferedWriter.newLine();
+                targetClient.bufferedWriter.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         
         private void handleLogin(String loginMessage) {
             try {
@@ -140,6 +187,11 @@ public class Server {
                     bufferedWriter.write("Login successful!");
                     bufferedWriter.newLine();
                     bufferedWriter.flush();
+
+                    sendUserListToClient(this);
+
+                    broadcastUserList();
+
                     
                     // Notify everyone that user joined
                     broadcastMessage("SERVER: " + clientUsername + " has joined the chat!");
@@ -224,6 +276,8 @@ public class Server {
             clients.remove(this);
             if (clientUsername != null) {
                 broadcastMessage("SERVER: " + clientUsername + " has left the chat!");
+                broadcastUserList(); 
+
             }
         }
 
